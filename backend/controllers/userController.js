@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
 const User = require("../models/userModel");
+const jwt = require('jsonwebtoken');
 
 const { generateToken } = require("../utils/generateToken");
 
@@ -8,28 +9,42 @@ const { generateToken } = require("../utils/generateToken");
 // @route   POST /api/users/login
 // @access  Public
 const authUser = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+    try {
+        const { email, password } = req.body;
 
-  if (!email || !password) {
-    res.status(400);
-    throw new Error("Please add all fields");
-  }
+        // Check if the user exists
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ message: 'Invalid credentials' });
+        }
 
-  //Check for user email
-  const user = await User.findOne({ email });
+        // Compare the provided password with the hashed password
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Invalid credentials' });
+        }
 
-  if (user && (await user.matchPassword(password))) {
-    res.status(200).json({
-      _id: user._id,
-      username: user.username,
-      email: user.email,
-      isAdmin: user.isAdmin,
-      token: generateToken(user._id),
-    });
-  } else {
-    res.status(401);
-    throw new Error("Invalid email or password");
-  }
+        // Create and sign the JWT token (including user id in the payload)
+        const token = jwt.sign(
+            { userId: user._id, email: user.email,role:user.role },
+            process.env.JWT_SECRET, 
+            { expiresIn: '1h' } 
+        );
+
+        // Send back the token and user data (you can customize the response)
+        return res.status(200).json({
+            message: 'Login successful',
+            token: token, 
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email
+            }
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: 'Server error' });
+    }
 });
 
 // @desc    Register a new user
