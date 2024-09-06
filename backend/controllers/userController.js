@@ -1,7 +1,8 @@
 const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
 const User = require("../models/userModel");
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
+const validator = require("validator");
 
 const { generateToken } = require("../utils/generateToken");
 
@@ -9,42 +10,42 @@ const { generateToken } = require("../utils/generateToken");
 // @route   POST /api/users/login
 // @access  Public
 const authUser = asyncHandler(async (req, res) => {
-    try {
-        const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-        // Check if the user exists
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(400).json({ message: 'Invalid credentials' });
-        }
-
-        // Compare the provided password with the hashed password
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ message: 'Invalid credentials' });
-        }
-
-        // Create and sign the JWT token (including user id in the payload)
-        const token = jwt.sign(
-            { userId: user._id, email: user.email,role:user.role },
-            process.env.JWT_SECRET, 
-            { expiresIn: '1h' } 
-        );
-
-        // Send back the token and user data (you can customize the response)
-        return res.status(200).json({
-            message: 'Login successful',
-            token: token, 
-            user: {
-                id: user._id,
-                username: user.username,
-                email: user.email
-            }
-        });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ message: 'Server error' });
+    // Check if the user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials" });
     }
+
+    // Compare the provided password with the hashed password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    // Create and sign the JWT token (including user id in the payload)
+    const token = jwt.sign(
+      { userId: user._id, email: user.email, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    // Send back the token and user data (you can customize the response)
+    return res.status(200).json({
+      message: "Login successful",
+      token: token,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
 });
 
 // @desc    Register a new user
@@ -58,8 +59,28 @@ const registerUser = asyncHandler(async (req, res) => {
     const userExists = await User.findOne({ email });
 
     if (userExists) {
-      res.status(400);
-      throw new Error("User already exists");
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    // Validate email
+    if (!validator.isEmail(email)) {
+      return res.status(400).json({ message: "Invalid email" });
+    }
+
+    // Strong password validation
+    if (
+      !validator.isStrongPassword(password, {
+        minLength: 8,
+        minLowercase: 1,
+        minUppercase: 1,
+        minNumbers: 1,
+        minSymbols: 1,
+      })
+    ) {
+      return res.status(400).json({
+        message:
+          "Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character",
+      });
     }
 
     // Hash the password
