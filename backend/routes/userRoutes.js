@@ -11,7 +11,7 @@ router.post('/login',loginLimiter, authUser)
 router.get('/profile', protect, getUserProfile)
 router.put('/profile', protect, updateUserProfile)
 
-router.get('/',protect, getUsers)
+router.get('/', getUsers)
 router.get('/:id', protect, admin, getUserById)
 router.delete('/:id', protect, admin, deleteUser)
 router.put('/:id', protect, admin, updateUser)
