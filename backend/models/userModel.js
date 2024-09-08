@@ -1,21 +1,44 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
+const yup = require("yup");
+
+// Define the Yup Validation schema for user data
+const userValidationSchema = yup.object().shape({
+  username: yup
+    .string()
+    .required("Please add username")
+    .min(4, "Username must be at least 4 characters long")
+    .max(16, "Username cannot be longer than 16 characters")
+    .matches(/^[A-Za-z0-9 ]+$/, "Username must be alphanumeric and can contain spaces"),
+  email: yup
+    .string()
+    .email("Please enter a valid email")
+    .required("Please add email"),
+  password: yup
+    .string()
+    .required("Please add password")
+    .min(8, "Password must be at least 8 characters long")
+    .matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/, "Password must contain at least 8 characters, one letter and one number"),
+  role: yup.number().default(0),
+});
+
+// Define the Mongoose user schema
 
 const userSchema = mongoose.Schema(
   {
     username: {
       type: String,
-      required: [true, "Please add username"],
+      required: true,
       unique: true,
     },
     email: {
       type: String,
-      required: [true, "Please add email"],
+      required: true,
       unique: true,
     },
     password: {
       type: String,
-      required: [true, "Please add password"],
+      required: true,
     },
     role: {
       type: Number,
@@ -27,4 +50,7 @@ const userSchema = mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = {
+  User: mongoose.model("User", userSchema),
+  validateUser: userValidationSchema, // Export the Yup validation schema
+};
