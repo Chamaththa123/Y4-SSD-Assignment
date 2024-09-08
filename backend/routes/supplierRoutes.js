@@ -7,26 +7,28 @@ const {
     deleteSingleSupplier,
     registerSupplier
 } = require("../controllers/supplierController");
+const { protect } = require("../middleware/authMiddleware");
+const { authorizeRoles } = require("../middleware/authorizeRoles");
 
 const router = express.Router();
 
 // get all the suppliers from the database
-router.get("/", getAllSuppliers);
+router.get("/",protect,authorizeRoles(1,3), getAllSuppliers);
 
 // get a single supplier from the database
-router.get("/:id", getSingleSupplier);
+router.get("/:id",protect,authorizeRoles(1,3), getSingleSupplier);
 
 // register a suppleir
-router.post("/", registerSupplier);
+router.post("/",protect,authorizeRoles(1,3), registerSupplier);
 
 //update a single item
-router.put("/:id", updateSingleSupplier);
+router.put("/:id",protect,authorizeRoles(1,3), updateSingleSupplier);
 
 // delete a single item
-router.delete("/:id", deleteSingleSupplier);
+router.delete("/:id",protect,authorizeRoles(1,3), deleteSingleSupplier);
 
 // get single item from mongID
-router.get("/mongo/:id",getSingleSupplierMongo)
+router.get("/mongo/:id",protect,authorizeRoles(1,3),getSingleSupplierMongo)
 
 // exporting the express router
 
