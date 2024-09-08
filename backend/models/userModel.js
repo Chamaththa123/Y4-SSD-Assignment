@@ -9,7 +9,10 @@ const userValidationSchema = yup.object().shape({
     .required("Please add username")
     .min(4, "Username must be at least 4 characters long")
     .max(16, "Username cannot be longer than 16 characters")
-    .matches(/^[A-Za-z0-9 ]+$/, "Username must be alphanumeric and can contain spaces"),
+    .matches(
+      /^[A-Za-z0-9 ]+$/,
+      "Username must be alphanumeric and can contain spaces"
+    ),
   email: yup
     .string()
     .email("Please enter a valid email")
@@ -18,7 +21,10 @@ const userValidationSchema = yup.object().shape({
     .string()
     .required("Please add password")
     .min(8, "Password must be at least 8 characters long")
-    .matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/, "Password must contain at least 8 characters, one letter and one number"),
+    .matches(
+      /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/,
+      "Password must contain at least 8 characters, one letter and one number"
+    ),
   role: yup.number().default(0),
 });
 
@@ -45,6 +51,14 @@ const userSchema = mongoose.Schema(
       enum: [0, 1, 2], // 0: User, 1: Admin, 2: editor
       default: 0,
     },
+    loginAttempts: { 
+      type: Number, 
+      required: true, 
+      default: 0
+    },
+    lockUntil: { 
+      type: Date 
+    }
   },
   {
     timestamps: true,

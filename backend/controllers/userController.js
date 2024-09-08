@@ -9,6 +9,10 @@ const { generateToken } = require("../utils/generateToken");
 // @desc    Auth user & get token
 // @route   POST /api/users/login
 // @access  Public
+
+const MAX_ATTEMPTS = 5; // Maximum failed login attempts
+const LOCK_TIME = 48 * 60 * 60 * 1000; // 2 days in milliseconds
+
 const authUser = asyncHandler(async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -19,11 +23,24 @@ const authUser = asyncHandler(async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
+    // Check if the user account is locked
+    if (user.lockUntil && user.lockUntil > Date.now()) {
+      return res.status(403).json({
+        message: `Account is locked until ${new Date(user.lockUntil).toLocaleString()}. Try again later.`,
+      });
+    }
+
     // Compare the provided password with the hashed password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      await handleFailedLogin(user); // Handle failed login attempt
       return res.status(400).json({ message: "Invalid credentials" });
     }
+
+     // Successful login: Reset login attempts and lockUntil
+     user.loginAttempts = 0;
+     user.lockUntil = undefined;
+     await user.save();
 
     // Create and sign the JWT token (including user id in the payload)
     const token = jwt.sign(
@@ -47,6 +64,18 @@ const authUser = asyncHandler(async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 });
+
+// Helper function to handle failed login attempts
+const handleFailedLogin = async (user) => {
+  user.loginAttempts += 1;
+
+  // Lock the account if maximum attempts are exceeded
+  if (user.loginAttempts >= MAX_ATTEMPTS) {
+    user.lockUntil = Date.now() + LOCK_TIME;
+  }
+
+  await user.save();
+};
 
 // @desc    Register a new user
 // @route   POST /api/users

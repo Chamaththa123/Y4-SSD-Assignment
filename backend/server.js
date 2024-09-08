@@ -5,8 +5,8 @@ const dotenv = require("dotenv").config();
 const { errorHandler } = require("./middleware/errorMiddleware");
 const connectDB = require("./config/db");
 
-// Import Helmet.js
-const helmet = require("helmet");
+// Import Security Configuration
+const securityConfig = require("./config/securityConfig");
 
 const userRoutes = require("./routes/userRoutes");
 const productRoutes = require("./routes/productRoutes");
@@ -49,25 +49,8 @@ const port = process.env.PORT || 4000;
 
 const app = express();
 
-// Set security-related HTTP headers using Helmet.js, including CSP
-app.use(helmet());
-
-// Customize Content Security Policy (CSP) to prevent XSS vulnerability
-app.use(
-  helmet.contentSecurityPolicy({
-    directives: {
-      defaultSrc: ["'self'"], // Allow resources only from the same origin
-      scriptSrc: ["'self'", "https://trusted-cdn.com"], // Allow scripts from your domain and trusted CDN
-      styleSrc: ["'self'", "https://trusted-cdn.com"], // Allow styles from your domain and trusted CDN
-      imgSrc: ["'self'", "data:"], // Allow images from your domain and inline images (like base64)
-      objectSrc: ["'none'"], // Disallow plugins like Flash
-      upgradeInsecureRequests: [], // Upgrade HTTP requests to HTTPS
-      connectSrc: ["'self'"], // Only allow connections to your own API server
-      frameAncestors: ["'none'"], // Prevent clickjacking attacks by disallowing the site to be embedded in iframes
-      reportUri: "/report-csp-violations", // Add a report URI for CSP violation
-    },
-  })
-);
+// Apply security configurations
+app.use(securityConfig());
 
 // CSP violation reporting endpoint
 app.post("/report-csp-violations", express.json(), (req, res) => {

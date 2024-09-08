@@ -2,6 +2,9 @@ import './App.css';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from 'react-hot-toast';
 
+// Import FrameBuster
+import FrameBuster from './components/FrameBuster';
+
 import AddItem from './pages/FormSample/AddItem';
 import AdminLayout from './pages/Layouts/AdminLayout';
 
@@ -116,6 +119,9 @@ function App() {
   return (
     <Router>
       <Toaster />
+
+      {/* Frame Buster */}
+      <FrameBuster />
       
       <Routes>
         {/* <Route path='/' element={<AppBlog />} /> */}
