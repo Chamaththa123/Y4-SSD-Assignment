@@ -48,6 +48,7 @@ const userSchema = mongoose.Schema(
     },
     role: {
       type: Number,
+      enum: [0, 1, 2], // 0: User, 1: Admin, 2: editor
       default: 0,
     },
     loginAttempts: { 
