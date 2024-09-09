@@ -1,7 +1,7 @@
 import './App.css';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from 'react-hot-toast';
-
+import { ContextProvider } from "./contexts/NavigationContext.js";
 // Import FrameBuster
 import FrameBuster from './components/FrameBuster';
 
@@ -117,7 +117,8 @@ import CompletedAppointments from './pages/Appointment/CompletedAppointments';
 
 function App() {
   return (
-    <Router>
+    <ContextProvider>
+      <Router>
       <Toaster />
 
       {/* Frame Buster */}
@@ -248,6 +249,7 @@ function App() {
 
       </Routes>
     </Router>
+    </ContextProvider>
   )
 }
 
