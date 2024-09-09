@@ -4,6 +4,10 @@ const colors = require("colors");
 const dotenv = require("dotenv").config();
 const { errorHandler } = require("./middleware/errorMiddleware");
 const connectDB = require("./config/db");
+const cookieParser = require("cookie-parser"); // Add cookie-parser
+const { csrfProtection } = require("./controllers/csrfController");
+//import csrf route
+const csrfRoutes = require("./routes/csrfRoutes");
 
 // Import Security Configuration
 const securityConfig = require("./config/securityConfig");
@@ -61,6 +65,13 @@ app.post("/report-csp-violations", express.json(), (req, res) => {
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser()); // Enable cookie-parser middleware
+
+// Use CSRF routes
+app.use("/api/csrf", csrfRoutes);
+
+// Apply CSRF protection to state-changing routes
+app.use(csrfProtection); // Protect all POST, PUT, DELETE routes
 
 app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
