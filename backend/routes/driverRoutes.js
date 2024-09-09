@@ -2,20 +2,21 @@ const express = require("express");
 const router = express.Router();
 
 const {
-	createNewDriver,
-	getAllDrivers,
-	getSingleDriver,
-	deleteDriver,
-	updateDriverDetails,
-	UpdateDriverDetailsUsingMongo,
-	FindDriverDetailsUsingMongo
+  createNewDriver,
+  getAllDrivers,
+  getSingleDriver,
+  deleteDriver,
+  updateDriverDetails,
+  UpdateDriverDetailsUsingMongo,
+  FindDriverDetailsUsingMongo,
 } = require("../controllers/driverController");
+const { protect } = require("../middleware/authMiddleware");
 
 // route for the get all drivers
-router.get("/", getAllDrivers);
+router.get("/", protect, getAllDrivers);
 
 // route for the get a single driver
-router.get("/:id", getSingleDriver);
+router.get("/:id", protect, getSingleDriver);
 
 // router for the create a driver
 router.post("/", createNewDriver);

@@ -10,7 +10,7 @@ const { generateToken } = require("../utils/generateToken");
 // @route   POST /api/users/login
 // @access  Public
 
-const MAX_ATTEMPTS = 5; // Maximum failed login attempts
+const MAX_ATTEMPTS = 6; // Maximum failed login attempts
 const LOCK_TIME = 48 * 60 * 60 * 1000; // 2 days in milliseconds
 
 const authUser = asyncHandler(async (req, res) => {
