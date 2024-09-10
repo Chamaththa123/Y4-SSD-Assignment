@@ -6,7 +6,7 @@ import NoItemsDisplayer from "./drivers-empty-result-diplayer";
 import "./ManageDriver.scss";
 import DriverReport from "../DeliveryReport/DeliveryReport";
 import { userRequest } from '../../../requestMethods'
-import axiosClient from "../../../axios-client";
+import {axiosClient} from "../../../axios-client";
 
 function ManageDriverComponent() {
 	const [drivers, setDrivers] = useState([]);

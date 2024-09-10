@@ -1,9 +1,10 @@
-import { useRef, useState } from "react";
+import { useRef, useState ,useEffect} from "react";
 import { publicRequest } from "../../requestMethods";
 import { useNavigate } from "react-router-dom";
 import "./SigninSignupStyles.scss";
-import axiosClient from "../../axios-client";
+import {axiosClient ,fetchCsrfToken } from "../../axios-client";
 import { useStateContext } from "../../contexts/NavigationContext.js";
+
 
 function Signin() {
   const { setUser, setToken } = useStateContext();
@@ -17,6 +18,14 @@ function Signin() {
     email: "",
     password: "",
   });
+
+  // Fetch CSRF token on component mount
+  useEffect(() => {
+    const initialize = async () => {
+      await fetchCsrfToken(); // Ensure CSRF token is fetched
+    };
+    initialize();
+  }, []);
 
   const validate = (loginData) => {
     const errors = {};
@@ -32,7 +41,7 @@ function Signin() {
     return errors;
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async  (e) => {
     e.preventDefault();
 
     const loginData = {
@@ -43,6 +52,7 @@ function Signin() {
     const validationErrors = validate(loginData);
 
     if (Object.keys(validationErrors).length === 0) {
+      await fetchCsrfToken(); // Ensure CSRF token is updated
       axiosClient
         .post("/users/login", loginData)
         .then(({ data }) => {

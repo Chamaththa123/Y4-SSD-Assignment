@@ -5,39 +5,56 @@ const axiosClient = axios.create({
   baseURL: `http://localhost:4000/api`,
   headers: {
     "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
-    "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept",
   },
 });
 
+// Fetch CSRF token and set it in a cookie or localStorage
+const fetchCsrfToken = async () => {
+  try {
+    const response = await axios.get("http://localhost:4000/api/csrf");
+    const { csrfToken } = response.data;
+    console.log("CSRF Token fetched:", csrfToken);
+    Cookies.set("X-CSRF-Token", csrfToken); // Store CSRF token in cookie with an expiry
+  } catch (error) {
+    console.error("Failed to fetch CSRF token:", error);
+  }
+};
+console.log("Cookies:", document.cookie);
+
+// Add CSRF token to request headers
 axiosClient.interceptors.request.use((config) => {
-  const token = Cookies.get("_auth");
-  console.log("Token in request:", token);
-  config.headers.Authorization = `Bearer ${token}`;
+  const csrfToken = Cookies.get("X-CSRF-Token");
+  console.log("CSRF Token in request headers:", csrfToken);
+
+  if (csrfToken) {
+    config.headers[`X-Csrf-Token`] = `${csrfToken}`;
+  }
+
+  const authToken = Cookies.get("_auth");
+  console.log("Auth Token in request headers:", authToken);
+
+  if (authToken) {
+    config.headers.Authorization = `Bearer ${authToken}`;
+  }
+
   return config;
 });
 
+// Handle response errors
 axiosClient.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
-    try {
-      const { response } = error;
-      if (response.status === 401) {
-        Cookies.remove("_auth");
-        localStorage.setItem(
-          "TOKEN_EXPIRE",
-          "Your login has expired. Please log in again to continue."
-        );
-        // Redirect to login page or perform any other action, like logging the user out
-      }
-    } catch (error) {
-      console.error(error);
+    const { response } = error;
+    if (response && response.status === 401) {
+      Cookies.remove("_auth");
+      localStorage.setItem(
+        "TOKEN_EXPIRE",
+        "Your login has expired. Please log in again to continue."
+      );
+      // Optionally redirect to login page or handle the session expiration
     }
-    throw error;
+    return Promise.reject(error);
   }
 );
 
-export default axiosClient;
+export { axiosClient, fetchCsrfToken };
