@@ -155,3 +155,30 @@ $danger-color: #e74c3c;
 .hide{
     visibility: hidden;
 }
+
+
+// password strength
+.password-strength {
+    margin-top: 10px;
+    display: flex;
+    align-items: center; // Align text and dots horizontally
+    font-size: 0.9rem;
+    color: #555;
+
+    span {
+        margin-left: 5px; // Add space between the text and dots
+    }
+  }
+  
+  .strength-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 2px;
+    background-color: lightgray;
+  }
+  
+  .strength-dot.filled {
+    background-color: green;
+  }
