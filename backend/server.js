@@ -71,7 +71,7 @@ app.use(cookieParser()); // Enable cookie-parser middleware
 app.use("/api/csrf", csrfRoutes);
 
 // Apply CSRF protection to state-changing routes
-app.use(csrfProtection); // Protect all POST, PUT, DELETE routes
+// app.use(csrfProtection); // Protect all POST, PUT, DELETE routes
 
 app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
