@@ -10,49 +10,74 @@ const { generateToken } = require("../utils/generateToken");
 // @route   POST /api/users/login
 // @access  Public
 
-const MAX_ATTEMPTS = 6; // Maximum failed login attempts
-const LOCK_TIME = 48 * 60 * 60 * 1000; // 2 days in milliseconds
+// Function to check if the account is locked
+const isAccountLocked = (user) => {
+  return user.lockUntil && user.lockUntil > Date.now();
+};
 
 const authUser = asyncHandler(async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Check if the user exists
+    // Find the user by email
     const user = await User.findOne({ email });
+
+    // If no user is found
     if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      return res.status(400).json({ message: 'Invalid Email' });
     }
 
-    // Check if the user account is locked
-    if (user.lockUntil && user.lockUntil > Date.now()) {
+    // Check if the account is locked
+    if (isAccountLocked(user)) {
+      const unlockDate = new Date(user.lockUntil);
+      const unlockDateString = unlockDate.toLocaleString(); // Format date and time
       return res.status(403).json({
-        message: `Account is locked until ${new Date(user.lockUntil).toLocaleString()}. Try again later.`,
+        message: `Account is locked. Try again after ${unlockDateString}.`,
       });
     }
 
+
     // Compare the provided password with the hashed password
     const isMatch = await bcrypt.compare(password, user.password);
+
     if (!isMatch) {
-      await handleFailedLogin(user); // Handle failed login attempt
-      return res.status(400).json({ message: "Invalid credentials" });
+      // Increment failed login attempts
+      user.failedLoginAttempts += 1;
+      user.lastLoginAttempt = Date.now();
+
+      // Lock the account after 8 failed attempts
+      if (user.failedLoginAttempts >= 8) {
+        user.lockUntil = Date.now() + 2 * 24 * 60 * 60 * 1000; // Lock for 2 days
+        user.failedLoginAttempts = 0; // Reset failed attempts
+        await user.save();
+        const unlockDate = new Date(user.lockUntil);
+        const unlockDateString = unlockDate.toLocaleString(); // Format date and time
+        return res.status(403).json({
+          message: `Account locked for 2 days due to multiple failed login attempts. Try again after ${unlockDateString}.`,
+        });
+      }
+
+      await user.save();
+      return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-     // Successful login: Reset login attempts and lockUntil
-     user.loginAttempts = 0;
-     user.lockUntil = undefined;
-     await user.save();
+    // Successful login, reset failed attempts and lockUntil
+    user.failedLoginAttempts = 0;
+    user.lockUntil = null;
+    user.lastLoginAttempt = Date.now();
+    await user.save();
 
-    // Create and sign the JWT token (including user id in the payload)
+    // Generate JWT token
     const token = jwt.sign(
       { userId: user._id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: '1h' }
     );
 
-    // Send back the token and user data (you can customize the response)
+    // Return token and user data
     return res.status(200).json({
-      message: "Login successful",
-      token: token,
+      message: 'Login successful',
+      token,
       user: {
         id: user._id,
         username: user.username,
@@ -61,21 +86,11 @@ const authUser = asyncHandler(async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Helper function to handle failed login attempts
-const handleFailedLogin = async (user) => {
-  user.loginAttempts += 1;
 
-  // Lock the account if maximum attempts are exceeded
-  if (user.loginAttempts >= MAX_ATTEMPTS) {
-    user.lockUntil = Date.now() + LOCK_TIME;
-  }
-
-  await user.save();
-};
 
 // @desc    Register a new user
 // @route   POST /api/users

@@ -51,19 +51,20 @@ const userSchema = mongoose.Schema(
       enum: [0, 1, 2], // 0: User, 1: Admin, 2: editor
       default: 0,
     },
-    loginAttempts: { 
-      type: Number, 
-      required: true, 
-      default: 0
+    failedLoginAttempts: {
+      type: Number,
+      default: 0,
     },
-    lockUntil: { 
-      type: Date 
-    }
+    lockUntil: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
   }
 );
+
 
 module.exports = {
   User: mongoose.model("User", userSchema),
