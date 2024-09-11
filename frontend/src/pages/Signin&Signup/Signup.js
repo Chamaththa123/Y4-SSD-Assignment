@@ -4,46 +4,17 @@ import { publicRequest } from "../../requestMethods";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../contexts/UserContext";
-import * as yup from "yup";
-
-// Yup validation schema
-
-const validationSchema = yup.object().shape({
-  username: yup
-    .string()
-    .required("Please add username")
-    .min(4, "Username must be at least 4 characters long")
-    .max(16, "Username cannot be longer than 16 characters")
-    .matches(
-      /^[A-Za-z0-9 ]+$/,
-      "Username must be alphanumeric and can contain spaces"
-    ),
-  email: yup
-    .string()
-    .email("Please enter a valid email")
-    .required("Please add email"),
-  password: yup
-    .string()
-    .required("Please add password")
-    .min(8, "Password must be at least 8 characters long")
-    .matches(
-      /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/,
-      "Password must contain at least 8 characters, one letter and one number"
-    ),
-  repassword: yup
-    .string()
-    .oneOf([yup.ref("password"), null], "Passwords must match"),
-});
+import validationSchema from "../../schemas/validationSchema";
+import PasswordStrengthMeter from "../../components/PasswordStrengthMeter";
+import PasswordRequirements from "../../components/PasswordRequirements";
 
 function Signup() {
   const navigate = useNavigate();
 
   const { user, setUser } = useContext(UserContext);
 
-  // set this state variable true if you want to display the error
   const [errorState, setErrorState] = useState(false);
 
-  // password validator
   const [passwordValidator, setPasswordValidator] = useState({
     username: "",
     email: "",
@@ -51,18 +22,82 @@ function Signup() {
     repassword: "",
   });
 
+  const [passwordRequirements, setPasswordRequirements] = useState({
+    lowercase: false,
+    uppercase: false,
+    number: false,
+    specialCharacter: false,
+    minLength: false,
+  });
+
+  const [passwordStrength, setPasswordStrength] = useState(0);
+
+  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+
   const signUpFieldHandler = (e) => {
     setPasswordValidator({
       ...passwordValidator,
       [e.target.name]: e.target.value,
     });
+
+    const newPasswordRequirements = { ...passwordRequirements };
+    const password = e.target.value;
+
+    if (password.length >= 8) {
+      newPasswordRequirements.minLength = true;
+    } else {
+      newPasswordRequirements.minLength = false;
+    }
+
+    if (password.match(/[a-z]/)) {
+      newPasswordRequirements.lowercase = true;
+    } else {
+      newPasswordRequirements.lowercase = false;
+    }
+
+    if (password.match(/[A-Z]/)) {
+      newPasswordRequirements.uppercase = true;
+    } else {
+      newPasswordRequirements.uppercase = false;
+    }
+
+    if (password.match(/[0-9]/)) {
+      newPasswordRequirements.number = true;
+    } else {
+      newPasswordRequirements.number = false;
+    }
+
+    if (password.match(/[@$!%*?&]/)) {
+      newPasswordRequirements.specialCharacter = true;
+    } else {
+      newPasswordRequirements.specialCharacter = false;
+    }
+
+    setPasswordRequirements(newPasswordRequirements);
+
+    let strength = 0;
+    if (password.length >= 8) {
+      strength++;
+    }
+    if (password.match(/[a-z]/)) {
+      strength++;
+    }
+    if (password.match(/[A-Z]/)) {
+      strength++;
+    }
+    if (password.match(/[0-9]/)) {
+      strength++;
+    }
+    if (password.match(/[@$!%*?&]/)) {
+      strength++;
+    }
+    setPasswordStrength(strength);
   };
 
   const signupSubmitHandler = async (e) => {
     e.preventDefault();
 
     try {
-      // Validate input using Yup
       await validationSchema.validate(passwordValidator, { abortEarly: false });
 
       publicRequest
@@ -91,7 +126,7 @@ function Signup() {
   return (
     <div className="signin-signup-cpt-frame">
       <form onSubmit={signupSubmitHandler}>
-        {/* username container */}
+        {/* Username Input */}
         <div className="input-container-signin-signup">
           <span className="signin-signup-label">Username*</span>
           <input
@@ -104,7 +139,8 @@ function Signup() {
             required
           />
         </div>
-        {/* email container */}
+
+        {/* Email Input */}
         <div className="input-container-signin-signup">
           <span className="signin-signup-label">Email*</span>
           <input
@@ -117,7 +153,8 @@ function Signup() {
             required
           />
         </div>
-        {/* password container */}
+
+        {/* Password Input */}
         <div className="input-container-signin-signup">
           <span className="signin-signup-label">Password*</span>
           <input
@@ -127,10 +164,20 @@ function Signup() {
             name="password"
             value={passwordValidator.password}
             onChange={signUpFieldHandler}
+            onFocus={() => setIsPasswordFocused(true)}
+            onBlur={() => setIsPasswordFocused(false)}
             required
           />
+          {/* Password Strength Meter */}
+          <PasswordStrengthMeter passwordStrength={passwordStrength} />
         </div>
-        {/* confirm password container */}
+
+        {/* Password Requirements */}
+        {isPasswordFocused && (
+          <PasswordRequirements passwordRequirements={passwordRequirements} />
+        )}
+
+        {/* Confirm Password Input */}
         <div className="input-container-signin-signup">
           <span className="signin-signup-label">Re-enter Password*</span>
           <input
@@ -143,12 +190,13 @@ function Signup() {
             required
           />
         </div>
-        {/* error message */}
+
         {errorState && (
           <span className="error-state-signin">
             Validation errors found. Please check your inputs!
           </span>
         )}
+
         <button type="submit" className="signin-signup-btn">
           Sign up
         </button>
