@@ -4,10 +4,38 @@ import { toast } from 'react-hot-toast';
 
 let loadingToast = null;
 
+// Sanitize file name function
+const sanitizeFileName = (fileName) => {
+    return fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
+  };
+
 const uploadImage = async (file) => {
-    const filename = new Date().getTime() + file.name
+    // Define valid file types
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const fileType = file.type;
+
+    // Check if the file type is valid
+    if (!validTypes.includes(fileType)) {
+        toast.error('Invalid file type. Please upload an image file (PNG, JPEG, or WebP).');
+        return Promise.reject(new Error('Invalid file type.'));
+    }
+    
+    const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
+    
+    // Check if file exceeds the maximum size
+    if (file.size > MAX_FILE_SIZE) {
+        toast.error('File is too large. Maximum size is 2 MB.');
+        return Promise.reject(new Error('File size exceeds the maximum limit.'));
+    }
+
+    // Sanitize the file name
+    const sanitizedFileName = sanitizeFileName(new Date().getTime() + "_" + file.name);
+
+    // Log the sanitized file name to the console
+    console.log("Sanitized file name:", sanitizedFileName);
+
     const storage = getStorage(app)
-    const storageRef = ref(storage, filename)
+    const storageRef = ref(storage, sanitizedFileName);
 
     const uploadTask = uploadBytesResumable(storageRef, file);
 
