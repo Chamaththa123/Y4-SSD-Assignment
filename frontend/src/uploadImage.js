@@ -35,7 +35,7 @@ const uploadImage = async (file) => {
     console.log("Sanitized file name:", sanitizedFileName);
 
     const storage = getStorage(app)
-    const storageRef = ref(storage, sanitizedFileName)
+    const storageRef = ref(storage, sanitizedFileName);
 
     const uploadTask = uploadBytesResumable(storageRef, file);
 
@@ -72,7 +72,7 @@ const uploadImage = async (file) => {
             // Handle successful uploads on complete
             // For instance, get the download URL: https://firebasestorage.googleapis.com/...
             getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                toast.success('Image uploaded successfully');
+                toast.success('Image uploaded successfully')
                 toast.dismiss(loadingToast);
                 loadingToast = null;
                 resolve(downloadURL);
