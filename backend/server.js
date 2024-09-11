@@ -62,7 +62,15 @@ app.post("/report-csp-violations", express.json(), (req, res) => {
   res.status(204).end(); // Respond with no content
 });
 
-app.use(cors());
+// Configure CORS
+const corsOptions = {
+  origin: ['http://localhost:3000'], // Replace with your frontend domains
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
+  credentials: true // Allow cookies and other credentials
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser()); // Enable cookie-parser middleware
