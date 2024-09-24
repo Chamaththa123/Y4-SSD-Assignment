@@ -58,7 +58,7 @@ function Signin() {
             setAlertMessage("Invalid Email or Password");
             setShowAlert(true);
           } else if (response && response.status === 429) {
-            setAlertMessage("Too many login attempts, please try again later.");
+            setAlertMessage("Too many login attempts, please try again after 15 minutes.");
             setShowAlert(true);
           } else if (response && response.status === 403) {
             const lockMessage =
