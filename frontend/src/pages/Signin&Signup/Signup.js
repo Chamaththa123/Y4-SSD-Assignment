@@ -1,20 +1,18 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
-import { publicRequest } from "../../requestMethods";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { UserContext } from "../../contexts/UserContext";
-import validationSchema from "../../schemas/validationSchema";
 import PasswordStrengthMeter from "../../components/PasswordStrengthMeter";
 import PasswordRequirements from "../../components/PasswordRequirements";
+import axiosClient from "../../axios-client";
+import { useStateContext } from "../../contexts/NavigationContext.js";
+import validationSchema from "../../schemas/validationSchema";
 
 function Signup() {
   const navigate = useNavigate();
-
-  const { user, setUser } = useContext(UserContext);
-
+  const { setUser } = useStateContext();
   const [errorState, setErrorState] = useState(false);
-
+  
   const [passwordValidator, setPasswordValidator] = useState({
     username: "",
     email: "",
@@ -31,90 +29,63 @@ function Signup() {
   });
 
   const [passwordStrength, setPasswordStrength] = useState(0);
-
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
 
   const signUpFieldHandler = (e) => {
+    const { name, value } = e.target;
     setPasswordValidator({
       ...passwordValidator,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
 
-    const newPasswordRequirements = { ...passwordRequirements };
-    const password = e.target.value;
+    if (name === "password") {
+      const newPasswordRequirements = { ...passwordRequirements };
+      const password = value;
 
-    if (password.length >= 8) {
-      newPasswordRequirements.minLength = true;
-    } else {
-      newPasswordRequirements.minLength = false;
-    }
+      newPasswordRequirements.minLength = password.length >= 8;
+      newPasswordRequirements.lowercase = /[a-z]/.test(password);
+      newPasswordRequirements.uppercase = /[A-Z]/.test(password);
+      newPasswordRequirements.number = /[0-9]/.test(password);
+      newPasswordRequirements.specialCharacter = /[@$!%*?&]/.test(password);
 
-    if (password.match(/[a-z]/)) {
-      newPasswordRequirements.lowercase = true;
-    } else {
-      newPasswordRequirements.lowercase = false;
-    }
+      setPasswordRequirements(newPasswordRequirements);
 
-    if (password.match(/[A-Z]/)) {
-      newPasswordRequirements.uppercase = true;
-    } else {
-      newPasswordRequirements.uppercase = false;
-    }
+      let strength = 0;
+      if (newPasswordRequirements.minLength) strength++;
+      if (newPasswordRequirements.lowercase) strength++;
+      if (newPasswordRequirements.uppercase) strength++;
+      if (newPasswordRequirements.number) strength++;
+      if (newPasswordRequirements.specialCharacter) strength++;
 
-    if (password.match(/[0-9]/)) {
-      newPasswordRequirements.number = true;
-    } else {
-      newPasswordRequirements.number = false;
+      setPasswordStrength(strength);
     }
-
-    if (password.match(/[@$!%*?&]/)) {
-      newPasswordRequirements.specialCharacter = true;
-    } else {
-      newPasswordRequirements.specialCharacter = false;
-    }
-
-    setPasswordRequirements(newPasswordRequirements);
-
-    let strength = 0;
-    if (password.length >= 8) {
-      strength++;
-    }
-    if (password.match(/[a-z]/)) {
-      strength++;
-    }
-    if (password.match(/[A-Z]/)) {
-      strength++;
-    }
-    if (password.match(/[0-9]/)) {
-      strength++;
-    }
-    if (password.match(/[@$!%*?&]/)) {
-      strength++;
-    }
-    setPasswordStrength(strength);
   };
 
   const signupSubmitHandler = async (e) => {
     e.preventDefault();
 
     try {
+      // Validate the input data using validation schema
       await validationSchema.validate(passwordValidator, { abortEarly: false });
 
-      publicRequest
-        .post("/users", {
-          username: passwordValidator.username,
-          email: passwordValidator.email,
-          password: passwordValidator.password,
-        })
-        .then((res) => {
-          if (res.status === 201) {
-            setUser(res.data);
-            navigate("/");
-          }
-        })
-        .catch((err) => {
-          toast.error(err.response.data.message);
-        });
+      // Check if password and repassword match
+      if (passwordValidator.password !== passwordValidator.repassword) {
+        toast.error("Passwords do not match!");
+        return;
+      }
+
+      // Make an API request to register the user
+      const response = await axiosClient.post("/users", {
+        username: passwordValidator.username,
+        email: passwordValidator.email,
+        password: passwordValidator.password,
+      });
+
+      if (response.status === 201) {
+        setUser(response.data);
+        navigate("/");
+        toast.success("Registration successful!");
+      }
     } catch (validationErrors) {
       setErrorState(true);
       validationErrors.inner.forEach((error) => {
@@ -168,7 +139,6 @@ function Signup() {
             onBlur={() => setIsPasswordFocused(false)}
             required
           />
-          {/* Password Strength Meter */}
           <PasswordStrengthMeter passwordStrength={passwordStrength} />
         </div>
 

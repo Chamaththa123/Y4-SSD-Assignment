@@ -8,7 +8,7 @@ const Header = () => {
 			{/* this is for the company logo */}
 			<div className="partition-nav-1">
 				<img src={logo} alt="" className="company-logo" />
-				<span className="brand-text">Central Pet Care </span>
+				<span className="brand-text">Central Pet Care wdqdwqd</span>
 			</div>
 			{/* this is for the link section */}
 			<div className="partition-nav-2">
