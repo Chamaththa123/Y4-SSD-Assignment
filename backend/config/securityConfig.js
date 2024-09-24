@@ -3,6 +3,8 @@ const helmet = require("helmet");
 
 const securityConfig = () => {
     return helmet({
+      hidePoweredBy: true,  // Explicitly remove the 'X-Powered-By' header
+      
       contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'self'"],  // Allow resources only from the same origin
