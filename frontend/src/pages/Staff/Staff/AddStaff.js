@@ -121,7 +121,19 @@ const AddStaff = () => {
                     </section>
                     <section className="input-container">
                         <span className="input-title">Staff Member Image</span>
-                        <input id="file-input" type="file" accept='.png, .jpeg, .jpg, .webp' className='input-field' onChange={(e) => setFile(e.target.files[0])} required/>
+                        <input id="file-input" type="file" accept='.png, .jpeg, .jpg, .webp' className='input-field' onChange={(e) => {
+            const file = e.target.files[0];
+            const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
+
+            if (file) {
+                if (file.size > MAX_FILE_SIZE) {
+                  toast.error('File is too large. Maximum size is 2 MB.'); // You can use toast or any other method for error display
+                    e.target.value = ''; // Clear the input if the file is too large
+                } else {
+                    setFile(file); // Set the file if it meets the size requirements
+                }
+            }
+        }}  required/>
                     </section>
                     <div className="btn-container-add-staff">
                       <button type='submit' className="submit-btn">Submit</button>
