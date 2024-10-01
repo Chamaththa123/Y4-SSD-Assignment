@@ -18,8 +18,6 @@ const OAuth2Strategy = require("passport-google-oauth2").Strategy;
 const securityConfig = require("./config/securityConfig");
 
 
-const clientid = ""
-const clientsecret = ""
 
 
 const userRoutes = require("./routes/userRoutes");
