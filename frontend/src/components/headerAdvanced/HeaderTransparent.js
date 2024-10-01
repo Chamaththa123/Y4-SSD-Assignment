@@ -19,7 +19,7 @@ const HeaderTransparent = () => {
 			{/* this is for the company logo */}
 			<div className="partition-nav-1">
 				<img src={logo} alt="Company Logo" className="company-logo" />
-				<span className="brand-text-header-adv">Central Pet Care</span>
+				<span className="brand-text-header-adv">Central Pet Care111</span>
 			</div>
 
 			{/* this is for the link section */}

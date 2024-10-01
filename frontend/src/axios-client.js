@@ -2,19 +2,18 @@ import axios from "axios";
 import Cookies from "js-cookie";
 
 const axiosClient = axios.create({
-  baseURL: `http://localhost:4000/api`,
+  baseURL: `http://localhost:8080/api`,
   headers: {
     "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
-    "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept",
   },
 });
 
 axiosClient.interceptors.request.use((config) => {
   const token = Cookies.get("_auth");
   console.log("Token in request:", token);
-  config.headers.Authorization = `Bearer ${token}`;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
   return config;
 });
 
