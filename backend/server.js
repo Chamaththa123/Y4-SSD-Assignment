@@ -18,8 +18,8 @@ const OAuth2Strategy = require("passport-google-oauth2").Strategy;
 const securityConfig = require("./config/securityConfig");
 
 
-const clientid = "732622326141-s99km78p7e0kka0sphk2a7agh102ddfb.apps.googleusercontent.com"
-const clientsecret = "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"
+const clientid = ""
+const clientsecret = ""
 
 
 const userRoutes = require("./routes/userRoutes");
