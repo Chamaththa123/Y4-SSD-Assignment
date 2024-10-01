@@ -9,16 +9,13 @@ const { csrfProtection } = require("./controllers/csrfController");
 //import csrf route
 const csrfRoutes = require("./routes/csrfRoutes");
 // const {userdb} = require("./models/userModel");
-const userdb = require("./models/userSchema")
+const userdb = require("./models/userSchema");
 const session = require("express-session");
 const passport = require("passport");
 const OAuth2Strategy = require("passport-google-oauth2").Strategy;
 
 // Import Security Configuration
 const securityConfig = require("./config/securityConfig");
-
-
-
 
 const userRoutes = require("./routes/userRoutes");
 const productRoutes = require("./routes/productRoutes");
@@ -78,13 +75,14 @@ app.post("/report-csp-violations", express.json(), (req, res) => {
 //   credentials: true // Allow cookies and other credentials
 // };
 
-app.use(cors({
-  origin: "http://localhost:3000", // No trailing slash
-  methods: "GET,POST,PUT,DELETE",
-  allowedHeaders: ['Content-Type', 'Authorization'], // Allow Authorization header
-  credentials: true // Allow cookies and credentials
-}));
-
+app.use(
+  cors({
+    origin: "http://localhost:3000", // No trailing slash
+    methods: "GET,POST,PUT,DELETE",
+    allowedHeaders: ["Content-Type", "Authorization"], // Allow Authorization header
+    credentials: true, // Allow cookies and credentials
+  })
+);
 
 // app.use(cors(corsOptions));
 app.use(express.json());
@@ -94,78 +92,86 @@ app.use(cookieParser()); // Enable cookie-parser middleware
 // Use CSRF routes
 app.use("/api/csrf", csrfRoutes);
 
-
-
-app.use(session({
-  secret:"123weeweffefw21213",
-  resave:false,
-  saveUninitialized:true
-}))
+app.use(
+  session({
+    secret: "123weeweffefw21213",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
 
 app.use(passport.initialize());
 app.use(passport.session());
 
 passport.use(
-  new OAuth2Strategy({
-      clientID:clientid,
-      clientSecret:clientsecret,
-      callbackURL:"/auth/google/callback",
-      scope:["profile","email"]
-  },
-  async(accessToken,refreshToken,profile,done)=>{
+  new OAuth2Strategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: "/auth/google/callback",
+      scope: ["profile", "email"],
+    },
+    async (accessToken, refreshToken, profile, done) => {
       try {
-          let user = await userdb.findOne({googleId:profile.id});
+        let user = await userdb.findOne({ googleId: profile.id });
 
-          if(!user){
-              user = new userdb({
-                  googleId:profile.id,
-                  displayName:profile.displayName,
-                  email:profile.emails[0].value,
-                  image:profile.photos[0].value
-              });
+        if (!user) {
+          user = new userdb({
+            googleId: profile.id,
+            displayName: profile.displayName,
+            email: profile.emails[0].value,
+            image: profile.photos[0].value,
+          });
 
-              await user.save();
-          }
+          await user.save();
+        }
 
-          return done(null,user)
+        return done(null, user);
       } catch (error) {
-          return done(error,null)
+        return done(error, null);
       }
-  }
+    }
   )
-)
+);
 
-passport.serializeUser((user,done)=>{
-  done(null,user);
-})
+passport.serializeUser((user, done) => {
+  done(null, user);
+});
 
-passport.deserializeUser((user,done)=>{
-  done(null,user);
+passport.deserializeUser((user, done) => {
+  done(null, user);
 });
 
 // initial google ouath login
-app.get("/auth/google",passport.authenticate("google",{scope:["profile","email"]}));
+app.get(
+  "/auth/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
 
-app.get("/auth/google/callback",passport.authenticate("google",{
-  successRedirect:"http://localhost:3000/store",
-  failureRedirect:"http://localhost:3000/login"
-}))
-
-app.get("/login/sucess",async(req,res)=>{
-
-  if(req.user){
-      res.status(200).json({message:"user Login",user:req.user})
-  }else{
-      res.status(400).json({message:"Not Authorized"})
-  }
-})
-
-app.get("/logout",(req,res,next)=>{
-  req.logout(function(err){
-      if(err){return next(err)}
-      res.redirect("http://localhost:3000");
+app.get(
+  "/auth/google/callback",
+  passport.authenticate("google", {
+    successRedirect: "http://localhost:3000/store",
+    failureRedirect: "http://localhost:3000/login",
   })
-})
+);
+
+app.get("/login/sucess", async (req, res) => {
+  if (req.user) {
+    res.status(200).json({ message: "user Login", user: req.user });
+  } else {
+    res.status(400).json({ message: "Not Authorized" });
+  }
+});
+
+app.get("/logout", (req, res, next) => {
+  req.logout(function (err) {
+    if (err) {
+      return next(err);
+    }
+    res.redirect("http://localhost:3000");
+  });
+});
 
 // Apply CSRF protection to state-changing routes
 // app.use(csrfProtection); // Protect all POST, PUT, DELETE routes
