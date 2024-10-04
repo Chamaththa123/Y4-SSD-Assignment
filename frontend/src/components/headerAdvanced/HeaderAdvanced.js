@@ -14,7 +14,7 @@ const HeaderAdvanced = () => {
 		<div className="nav-container-header-adv">
 			{/* this is for the company logo */}
 			<div className="partition-nav-1">
-				<span className="brand-text-header-adv">Central Pet Care </span>
+				<span className="brand-text-header-adv">Central Pet Care</span>
 			</div>
 			{/* this is for the link section */}
 			<div className="partition-nav-2-header-adv">

@@ -12,6 +12,7 @@ import { WishlistContext } from "../../contexts/WishlistContext";
 import { FaRegHeart } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
 import Header from '../../components/store/Header/Header';
+import axiosClient from '../../axios-client';
 
 const Container = styled.div``;
 
@@ -227,7 +228,7 @@ const Product = () => {
   const { wishlist, addToWishlist, isItemInWishlist } = useContext(WishlistContext);
 
   const getProduct = async () => {
-    publicRequest.get("/products/" + id)
+    axiosClient.get("/products/" + id)
     .then(res => {
         setProduct(res.data)
     })

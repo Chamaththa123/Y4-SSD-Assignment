@@ -3,6 +3,9 @@ const bcrypt = require("bcrypt");
 const {User} = require("../models/userModel");
 const jwt = require("jsonwebtoken");
 const validator = require("validator");
+const session = require("express-session");
+const passport = require("passport");
+const OAuth2Strategy = require("passport-google-oauth2").Strategy;
 
 const { generateToken } = require("../utils/generateToken");
 
