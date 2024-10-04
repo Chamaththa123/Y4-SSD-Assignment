@@ -75,6 +75,9 @@ app.post("/report-csp-violations", express.json(), (req, res) => {
 //   credentials: true // Allow cookies and other credentials
 // };
 
+const clientid = "732622326141-s99km78p7e0kka0sphk2a7agh102ddfb.apps.googleusercontent.com"
+const clientsecret = "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"
+
 app.use(
   cors({
     origin: "http://localhost:3000", // No trailing slash
@@ -106,8 +109,8 @@ app.use(passport.session());
 passport.use(
   new OAuth2Strategy(
     {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      clientID: clientid,
+      clientSecret: clientsecret,
       callbackURL: "/auth/google/callback",
       scope: ["profile", "email"],
     },
