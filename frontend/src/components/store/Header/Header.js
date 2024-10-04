@@ -26,6 +26,8 @@ const Header = () => {
   // logoout
   const logout = ()=>{
       window.open("http://localhost:8080/logout","_self")
+      setUser(null);
+    setToken(null);
   }
 
   useEffect(() => {

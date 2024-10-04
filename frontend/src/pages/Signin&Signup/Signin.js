@@ -156,7 +156,7 @@ function Signin() {
             ></path>
           </svg>
           Continue with Google
-        </button>zz
+        </button>
     </div>
   );
 }
