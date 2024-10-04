@@ -6,6 +6,8 @@ const { errorHandler } = require("./middleware/errorMiddleware");
 const connectDB = require("./config/db");
 const cookieParser = require("cookie-parser"); // Add cookie-parser
 const { csrfProtection } = require("./controllers/csrfController");
+const fs = require("fs");
+const https = require("https");
 //import csrf route
 const csrfRoutes = require("./routes/csrfRoutes");
 // const {userdb} = require("./models/userModel");
@@ -220,5 +222,15 @@ app.use("/api/appointments", appointmentRoutes);
 app.use(errorHandler);
 
 connectDB();
+
+// Create an HTTPS server
+const httpsOptions = {
+  key: fs.readFileSync("./certs/key.pem"),  // Path to your private key
+  cert: fs.readFileSync("./certs/cert.pem"),  // Path to your certificate
+};
+
+https.createServer(httpsOptions, app).listen(httpsPort, () => {
+  console.log(`🚀 HTTPS Server started on port ${httpsPort}`);
+});
 
 app.listen(port, () => console.log(`🚀 Server started on port ${port}`));
