@@ -116,6 +116,7 @@ passport.use(
       scope: ["profile", "email"],
     },
     async (accessToken, refreshToken, profile, done) => {
+      console.log(profile); // Log the full profile for debugging
       try {
         let user = await userdb.findOne({ googleId: profile.id });
 
@@ -123,6 +124,7 @@ passport.use(
           user = new userdb({
             googleId: profile.id,
             displayName: profile.displayName,
+            username: profile.displayName,
             email: profile.emails[0].value,
             image: profile.photos[0].value,
           });
