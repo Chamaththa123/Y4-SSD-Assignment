@@ -75,8 +75,6 @@ app.post("/report-csp-violations", express.json(), (req, res) => {
 //   credentials: true // Allow cookies and other credentials
 // };
 
-const clientid = "732622326141-s99km78p7e0kka0sphk2a7agh102ddfb.apps.googleusercontent.com"
-const clientsecret = "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"
 
 app.use(
   cors({
@@ -95,13 +93,7 @@ app.use(cookieParser()); // Enable cookie-parser middleware
 // Use CSRF routes
 app.use("/api/csrf", csrfRoutes);
 
-app.use(
-  session({
-    secret: "123weeweffefw21213",
-    resave: false,
-    saveUninitialized: true,
-  })
-);
+
 
 app.use(passport.initialize());
 app.use(passport.session());
