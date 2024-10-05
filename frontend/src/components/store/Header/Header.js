@@ -40,7 +40,7 @@ const Header = () => {
       {/* this is for the company logo */}
       <div className="partition-nav-1">
         <img alt="" className="company-logo" />
-        <span className="brand-text">Central Pet Care qq</span>
+        <span className="brand-text">Central Pet Care</span>
       </div>
       {/* this is for the link section */}
       <div className="partition-nav-2">
@@ -84,6 +84,8 @@ const Header = () => {
           alt=""
         />
       </span>
+      {user?.role === 1 && <button onClick={() => navigate('/admin/delivery/add-driver')}>Admin</button>}
+
     </>
   ) : (
     <>
